@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>El Jardín de Cami</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
+
+  :root{
+    --coral: #FF6961;
+    --leaf: #77DD77;
+    --sun: #FDFD96;
+    --sky: #84B6F4;
+    --pink: #FDCAE1;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-family: 'Lato', sans-serif;
+    background: linear-gradient(180deg, var(--sky) 0%, #B9D7F8 45%, #E8F2FF 100%);
+    color: #3A3A3A;
+    overflow-x: hidden;
+  }
+
+  .page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 20px 0;
+    position: relative;
+  }
+
+  /* Nubes suaves de fondo */
+  .cloud {
+    position: absolute;
+    background: rgba(255,255,255,0.75);
+    border-radius: 50px;
+    filter: blur(1px);
+  }
+  .cloud::before, .cloud::after {
+    content: "";
+    position: absolute;
+    background: rgba(255,255,255,0.75);
+    border-radius: 50%;
+  }
+  .cloud1 { width: 90px; height: 30px; top: 6%; left: 8%; }
+  .cloud1::before { width: 45px; height: 45px; top: -20px; left: 10px; }
+  .cloud1::after { width: 35px; height: 35px; top: -14px; left: 45px; }
+  .cloud2 { width: 70px; height: 24px; top: 14%; right: 10%; }
+  .cloud2::before { width: 35px; height: 35px; top: -16px; left: 8px; }
+  .cloud2::after { width: 28px; height: 28px; top: -10px; left: 34px; }
+
+  header {
+    text-align: center;
+    max-width: 420px;
+    z-index: 2;
+  }
+
+  h1 {
+    font-weight: 700;
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    color: #C9483F;
+    margin: 0 0 18px;
+    letter-spacing: 0.3px;
+  }
+
+  .message {
+    font-weight: 300;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #4A4033;
+    margin: 0 auto 26px;
+    max-width: 34ch;
+  }
+
+  .cta {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #6B2A24;
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--pink) 100%);
+    border: none;
+    padding: 15px 26px;
+    border-radius: 999px;
+    box-shadow: 0 8px 18px rgba(255, 105, 97, 0.28), 0 2px 4px rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    z-index: 2;
+  }
+  .cta:active {
+    transform: scale(0.95) translateY(2px);
+    box-shadow: 0 3px 8px rgba(255, 105, 97, 0.28);
+  }
+
+  /* Jardín */
+  .garden-wrap {
+    width: 100%;
+    max-width: 480px;
+    margin-top: 34px;
+    z-index: 1;
+  }
+  .garden-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .stem {
+    transform-origin: bottom center;
+    animation: sway 4.5s ease-in-out infinite;
+  }
+  .stem.delay1 { animation-delay: -0.6s; animation-duration: 5.2s; }
+  .stem.delay2 { animation-delay: -1.4s; animation-duration: 4.8s; }
+  .stem.delay3 { animation-delay: -2.1s; animation-duration: 5.5s; }
+  .stem.delay4 { animation-delay: -0.3s; animation-duration: 4.2s; }
+  .stem.delay5 { animation-delay: -1.8s; animation-duration: 5s; }
+
+  @keyframes sway {
+    0%, 100% { transform: rotate(-2.5deg); }
+    50% { transform: rotate(2.5deg); }
+  }
+
+  .flower-head {
+    cursor: pointer;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.15s ease;
+  }
+  .flower-head.pulse {
+    animation: pulse 0.5s ease;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.22); }
+    60% { transform: scale(0.94); }
+    100% { transform: scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stem { animation: none; }
+    .flower-head.pulse { animation: none; }
+  }
+
+  footer {
+    padding: 18px 0 28px;
+    font-size: 0.8rem;
+    color: #5A6E8C;
+    text-align: center;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(58, 76, 107, 0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+  }
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFF7F6 100%);
+    border-radius: 24px;
+    padding: 34px 26px 28px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.18);
+    transform: translateY(18px) scale(0.96);
+    transition: transform 0.3s ease;
+  }
+  .modal-overlay.open .modal {
+    transform: translateY(0) scale(1);
+  }
+
+  .modal-icon { font-size: 2.1rem; margin-bottom: 12px; display: block; }
+
+  .modal p {
+    font-weight: 400;
+    font-size: 1.02rem;
+    line-height: 1.6;
+    color: #4A4033;
+    margin: 0;
+  }
+
+  .modal-close {
+    margin-top: 22px;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #fff;
+    background: var(--coral);
+    border: none;
+    padding: 11px 28px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(255,105,97,0.35);
+    transition: transform 0.15s ease;
+  }
+  .modal-close:active { transform: scale(0.94); }
+
+  .modal-x {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(58,64,51,0.06);
+    color: #7A7168;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+
+  <header>
+    <h1>🌼 El Jardín de Cami 🌼</h1>
+    <p class="message">Aquí crece cada momento que hemos compartido. Cada flor es un recuerdo, cada color eres tú iluminando mi vida. Feliz aniversario, mi amor 💛</p>
+    <button class="cta" id="openModal">🌸 Descubre lo que está por florecer</button>
+  </header>
+
+  <div class="garden-wrap">
+    <svg class="garden-svg" viewBox="0 0 400 270" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- fondo / colina -->
+        <linearGradient id="hillBack" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#9AE79A"/>
+          <stop offset="100%" stop-color="#77DD77"/>
+        </linearGradient>
+        <linearGradient id="hillFront" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#6BC96B"/>
+          <stop offset="100%" stop-color="#4FAE4F"/>
+        </linearGradient>
+
+        <!-- tallos -->
+        <linearGradient id="stemGrad" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#4FAE4F"/>
+          <stop offset="100%" stop-color="#8FE28F"/>
+        </linearGradient>
+        <linearGradient id="leafGrad" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stop-color="#5DBB5D"/>
+          <stop offset="100%" stop-color="#9CE89C"/>
+        </linearGradient>
+
+        <!-- tulipán coral -->
+        <linearGradient id="tulipCoral" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#E8433C"/>
+          <stop offset="100%" stop-color="#FF9791"/>
+        </linearGradient>
+        <linearGradient id="tulipCoralShade" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#C93830"/>
+          <stop offset="100%" stop-color="#FF6961"/>
+        </linearGradient>
+
+        <!-- tulipán rosa -->
+        <radialGradient id="tulipPink" cx="50%" cy="85%" r="80%">
+          <stop offset="0%" stop-color="#FF9FC4"/>
+          <stop offset="100%" stop-color="#FDE3EF"/>
+        </radialGradient>
+        <linearGradient id="tulipPinkShade" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#F79BC0"/>
+          <stop offset="100%" stop-color="#FDCAE1"/>
+        </linearGradient>
+
+        <!-- margarita blanca -->
+        <linearGradient id="daisyWhite" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#F2EFE6"/>
+          <stop offset="100%" stop-color="#FFFFFF"/>
+        </linearGradient>
+        <!-- margarita rosa -->
+        <linearGradient id="daisyPink" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#F8AFCF"/>
+          <stop offset="100%" stop-color="#FDCAE1"/>
+        </linearGradient>
+        <!-- centro dorado -->
+        <radialGradient id="sunCenter" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#FFFFC2"/>
+          <stop offset="55%" stop-color="#FDFD96"/>
+          <stop offset="100%" stop-color="#E8C94A"/>
+        </radialGradient>
+
+        <radialGradient id="butterflyPink" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#FFFFFF"/>
+          <stop offset="100%" stop-color="#FDCAE1"/>
+        </radialGradient>
+        <radialGradient id="butterflyBlue" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#C9E0FF"/>
+          <stop offset="100%" stop-color="#84B6F4"/>
+        </radialGradient>
+
+        <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#3A5A2A" flood-opacity="0.25"/>
+        </filter>
+        <filter id="petalShadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#8A3B33" flood-opacity="0.3"/>
+        </filter>
+      </defs>
+
+      <!-- colina trasera -->
+      <path d="M0,225 Q100,196 200,220 T400,210 V270 H0 Z" fill="url(#hillBack)" opacity="0.6"/>
+      <!-- colina frontal -->
+      <path d="M0,240 Q120,210 220,236 T400,226 V270 H0 Z" fill="url(#hillFront)"/>
+
+      <!-- ===== Tulipán 1 (coral) — tallo + par de hojas + flor ===== -->
+      <g class="stem delay1">
+        <path d="M55,255 Q52,200 55,140" stroke="url(#stemGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M55,195 Q34,192 26,175 Q42,177 55,197 Z" fill="url(#leafGrad)"/>
+        <path d="M55,210 Q74,206 81,190 Q66,192 55,212 Z" fill="url(#leafGrad)" opacity="0.9"/>
+        <g class="flower-head" filter="url(#softShadow)" transform="translate(55,140)">
+          <path d="M-4,10 Q-24,0 -20,-30 Q-8,-20 -4,10 Z" fill="url(#tulipCoralShade)" filter="url(#petalShadow)"/>
+          <path d="M4,10 Q24,0 20,-30 Q8,-20 4,10 Z" fill="url(#tulipCoralShade)" filter="url(#petalShadow)"/>
+          <path d="M0,12 Q-14,-6 -6,-34 Q0,-40 6,-34 Q14,-6 0,12 Z" fill="url(#tulipCoral)" filter="url(#petalShadow)"/>
+          <path d="M-2,-2 Q-6,-18 -1,-30 Q2,-18 1,-4 Z" fill="#FFE3E0" opacity="0.55"/>
+        </g>
+      </g>
+
+      <!-- ===== Margarita 1 (blanca) — tallo + par de hojas + flor ===== -->
+      <g class="stem delay2">
+        <path d="M112,258 Q110,205 112,150" stroke="url(#stemGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M112,205 Q92,201 85,184 Q100,186 112,207 Z" fill="url(#leafGrad)"/>
+        <path d="M112,222 Q131,218 138,202 Q123,204 112,224 Z" fill="url(#leafGrad)" opacity="0.9"/>
+        <g class="flower-head" filter="url(#softShadow)" transform="translate(112,150)">
+          <g fill="url(#daisyWhite)">
+            <path d="M0,0 Q-9,-14 0,-26 Q9,-14 0,0 Z" transform="rotate(0)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-9,-14 0,-26 Q9,-14 0,0 Z" transform="rotate(45)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-9,-14 0,-26 Q9,-14 0,0 Z" transform="rotate(90)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-9,-14 0,-26 Q9,-14 0,0 Z" transform="rotate(135)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-9,-14 0,-26 Q9,-14 0,0 Z" transform="rotate(180)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-9,-14 0,-26 Q9,-14 0,0 Z" transform="rotate(225)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-9,-14 0,-26 Q9,-14 0,0 Z" transform="rotate(270)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-9,-14 0,-26 Q9,-14 0,0 Z" transform="rotate(315)" filter="url(#petalShadow)"/>
+          </g>
+          <circle r="11" fill="url(#sunCenter)"/>
+          <circle r="11" fill="none" stroke="#D9A93A" stroke-width="0.6" opacity="0.5"/>
+        </g>
+      </g>
+
+      <!-- ===== Tulipán 2 (rosa, grande, centro) — tallo + par de hojas + flor ===== -->
+      <g class="stem delay3">
+        <path d="M170,260 Q168,190 170,128" stroke="url(#stemGrad)" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M170,190 Q146,186 137,166 Q155,168 170,192 Z" fill="url(#leafGrad)"/>
+        <path d="M170,210 Q194,206 203,187 Q185,189 170,212 Z" fill="url(#leafGrad)" opacity="0.9"/>
+        <g class="flower-head" filter="url(#softShadow)" transform="translate(170,128)">
+          <path d="M-6,14 Q-30,2 -25,-36 Q-10,-24 -6,14 Z" fill="url(#tulipPinkShade)" filter="url(#petalShadow)"/>
+          <path d="M6,14 Q30,2 25,-36 Q10,-24 6,14 Z" fill="url(#tulipPinkShade)" filter="url(#petalShadow)"/>
+          <path d="M0,16 Q-17,-8 -7,-42 Q0,-48 7,-42 Q17,-8 0,16 Z" fill="url(#tulipPink)" filter="url(#petalShadow)"/>
+          <path d="M-2,-4 Q-7,-22 -1,-38 Q3,-22 1,-6 Z" fill="#FFF0F7" opacity="0.6"/>
+        </g>
+      </g>
+
+      <!-- ===== Margarita 2 (rosa) — tallo + par de hojas + flor ===== -->
+      <g class="stem delay4">
+        <path d="M240,258 Q242,210 240,158" stroke="url(#stemGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M240,207 Q220,203 213,186 Q228,188 240,209 Z" fill="url(#leafGrad)"/>
+        <path d="M240,224 Q259,220 266,203 Q251,205 240,226 Z" fill="url(#leafGrad)" opacity="0.9"/>
+        <g class="flower-head" filter="url(#softShadow)" transform="translate(240,158) rotate(8)">
+          <g fill="url(#daisyPink)">
+            <path d="M0,0 Q-8,-12 0,-22 Q8,-12 0,0 Z" transform="rotate(0)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-12 0,-22 Q8,-12 0,0 Z" transform="rotate(51)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-12 0,-22 Q8,-12 0,0 Z" transform="rotate(102)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-12 0,-22 Q8,-12 0,0 Z" transform="rotate(153)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-12 0,-22 Q8,-12 0,0 Z" transform="rotate(204)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-12 0,-22 Q8,-12 0,0 Z" transform="rotate(255)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-12 0,-22 Q8,-12 0,0 Z" transform="rotate(306)" filter="url(#petalShadow)"/>
+          </g>
+          <circle r="9" fill="url(#sunCenter)"/>
+        </g>
+      </g>
+
+      <!-- ===== Tulipán 3 (coral, pequeño) — tallo + hoja + flor ===== -->
+      <g class="stem delay5">
+        <path d="M292,256 Q290,210 292,166" stroke="url(#stemGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M292,212 Q274,208 267,192 Q281,194 292,214 Z" fill="url(#leafGrad)" opacity="0.9"/>
+        <g class="flower-head" filter="url(#softShadow)" transform="translate(292,166)">
+          <path d="M-4,9 Q-19,0 -16,-24 Q-6,-16 -4,9 Z" fill="url(#tulipCoralShade)" filter="url(#petalShadow)"/>
+          <path d="M4,9 Q19,0 16,-24 Q6,-16 4,9 Z" fill="url(#tulipCoralShade)" filter="url(#petalShadow)"/>
+          <path d="M0,10 Q-11,-4 -5,-27 Q0,-32 5,-27 Q11,-4 0,10 Z" fill="url(#tulipCoral)" filter="url(#petalShadow)"/>
+        </g>
+      </g>
+
+      <!-- ===== Margarita 3 (blanca) — tallo + hoja + flor ===== -->
+      <g class="stem delay1">
+        <path d="M340,260 Q338,215 340,164" stroke="url(#stemGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M340,216 Q322,212 315,196 Q329,198 340,218 Z" fill="url(#leafGrad)" opacity="0.9"/>
+        <g class="flower-head" filter="url(#softShadow)" transform="translate(340,164) rotate(-6)">
+          <g fill="url(#daisyWhite)">
+            <path d="M0,0 Q-8,-13 0,-24 Q8,-13 0,0 Z" transform="rotate(0)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-13 0,-24 Q8,-13 0,0 Z" transform="rotate(45)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-13 0,-24 Q8,-13 0,0 Z" transform="rotate(90)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-13 0,-24 Q8,-13 0,0 Z" transform="rotate(135)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-13 0,-24 Q8,-13 0,0 Z" transform="rotate(180)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-13 0,-24 Q8,-13 0,0 Z" transform="rotate(225)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-13 0,-24 Q8,-13 0,0 Z" transform="rotate(270)" filter="url(#petalShadow)"/>
+            <path d="M0,0 Q-8,-13 0,-24 Q8,-13 0,0 Z" transform="rotate(315)" filter="url(#petalShadow)"/>
+          </g>
+          <circle r="10" fill="url(#sunCenter)"/>
+        </g>
+      </g>
+
+      <!-- mariposa suelta -->
+      <g transform="translate(300,74)">
+        <ellipse cx="-4" cy="0" rx="6" ry="9" fill="url(#butterflyPink)" transform="rotate(-20 -4 0)"/>
+        <ellipse cx="4" cy="0" rx="6" ry="9" fill="url(#butterflyBlue)" transform="rotate(20 4 0)"/>
+        <line x1="0" y1="-6" x2="0" y2="6" stroke="#4FAE4F" stroke-width="2" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+
+  <footer>hecho con cariño 🌷</footer>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-x" id="closeX" aria-label="Cerrar">✕</button>
+    <span class="modal-icon">💐</span>
+    <p>Las flores de este jardín no se quedaron en la pantalla... salieron a buscarte. Revisa cerca de ti 💐💌</p>
+    <button class="modal-close" id="closeBtn">Cerrar</button>
+  </div>
+</div>
+
+<script>
+  const overlay = document.getElementById('modalOverlay');
+  const openBtn = document.getElementById('openModal');
+  const closeBtn = document.getElementById('closeBtn');
+  const closeX = document.getElementById('closeX');
+
+  function openModal() {
+    overlay.classList.add('open');
+  }
+  function closeModal() {
+    overlay.classList.remove('open');
+  }
+
+  openBtn.addEventListener('click', openModal);
+  closeBtn.addEventListener('click', closeModal);
+  closeX.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+
+  // Rebote al tocar cada flor
+  document.querySelectorAll('.flower-head').forEach((flower) => {
+    flower.addEventListener('click', () => {
+      flower.classList.remove('pulse');
+      // forzar reflow para poder relanzar la animación
+      void flower.offsetWidth;
+      flower.classList.add('pulse');
+    });
+    flower.addEventListener('animationend', () => {
+      flower.classList.remove('pulse');
+    });
+  });
+</script>
+
+</body>
+</html>
